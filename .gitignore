@@ -17,6 +17,7 @@ __pycache__/
 /e2e/test-results/
 /e2e/playwright-report/
 
+/AGENTS.md
 /CLAUDE.md
 /.mcp.json
 /skills-lock.json
