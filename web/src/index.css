@@ -1,6 +1,32 @@
 @import "tailwindcss";
-@plugin "./hero.ts";
-@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+@import "@heroui/styles";
+
+/* Brand palette. `accent` is HeroUI's main semantic color (v2 `primary`);
+   `secondary` is a project-owned color, since v3 dropped the token. */
+@theme {
+  --color-secondary: #5e409d;
+}
+
+:root {
+  --accent: #24837b;
+  --accent-foreground: #ffffff;
+  --focus: #24837b;
+}
+
+.dark {
+  --accent: #3aa99f;
+  --accent-foreground: #000000;
+  --focus: #3aa99f;
+  --color-secondary: #8b7ec8;
+}
+
+/* Icon-only row actions (job cards, subscription rows): no background at rest
+   or on hover, muted icon that only picks up color on hover. */
+@utility icon-action {
+  @apply text-muted hover:text-foreground;
+  --button-bg-hover: transparent;
+  --button-bg-pressed: transparent;
+}
 
 /* Animated gradient text */
 @keyframes gradient {
@@ -22,120 +48,74 @@
 /* Configure dark mode to use dark class */
 @variant dark (&:where(.dark, .dark *));
 
-/* View Transitions API - Theme Toggle Animation */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-::view-transition-old(root) {
-  z-index: 1;
-}
-
-::view-transition-new(root) {
-  z-index: 9999;
-}
-
-/* Disable transition animation for users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
-
 html {
   scrollbar-gutter: stable;
 }
 
 /* Background */
 html {
-  background:
-    radial-gradient(
-      ellipse 2500px 600px at 50% 0%,
-      rgba(139, 126, 200, 0.28) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 1200px 200px at 50% 100%,
-      rgba(58, 169, 159, 0.18) 0%,
-      transparent 60%
-    );
   background-color: #fff;
 }
 
 html.dark {
-  background:
-    radial-gradient(
-      ellipse 2500px 600px at 50% 0%,
-      rgba(139, 126, 200, 0.18) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 1200px 200px at 50% 100%,
-      rgba(58, 169, 159, 0.08) 0%,
-      transparent 60%
-    );
   background-color: #000;
 }
 
 /* Logs panel ANSI styling using HeroUI semantic colors */
 /* ansi_up outputs class names like ansi-red-fg, ansi-bright-green-fg, etc. */
 .logs-container {
-  color: hsl(var(--heroui-foreground));
+  color: var(--foreground);
 
   /* Standard ANSI colors */
   & .ansi-black-fg {
-    color: hsl(var(--heroui-foreground-500));
+    color: var(--muted);
   }
   & .ansi-red-fg {
-    color: hsl(var(--heroui-danger));
+    color: var(--danger);
   }
   & .ansi-green-fg {
-    color: hsl(var(--heroui-success));
+    color: var(--success);
   }
   & .ansi-yellow-fg {
-    color: hsl(var(--heroui-warning));
+    color: var(--warning);
   }
   & .ansi-blue-fg {
     color: var(--color-blue-400);
   }
   & .ansi-magenta-fg {
-    color: hsl(var(--heroui-secondary));
+    color: var(--color-secondary);
   }
   & .ansi-cyan-fg {
-    color: hsl(var(--heroui-primary));
+    color: var(--accent);
   }
   & .ansi-white-fg {
-    color: hsl(var(--heroui-foreground));
+    color: var(--foreground);
   }
 
   /* Bright ANSI colors */
   & .ansi-bright-black-fg {
-    color: hsl(var(--heroui-foreground-400));
+    color: var(--muted);
   }
   & .ansi-bright-red-fg {
-    color: hsl(var(--heroui-danger-400));
+    color: var(--danger);
   }
   & .ansi-bright-green-fg {
-    color: hsl(var(--heroui-success-400));
+    color: var(--success);
   }
   & .ansi-bright-yellow-fg {
-    color: hsl(var(--heroui-warning-400));
+    color: var(--warning);
   }
   & .ansi-bright-blue-fg {
     color: var(--color-blue-400);
   }
   & .ansi-bright-magenta-fg {
-    color: hsl(var(--heroui-secondary-400));
+    color: var(--color-secondary);
   }
   & .ansi-bright-cyan-fg {
-    color: hsl(var(--heroui-primary-400));
+    color: var(--accent);
   }
   & .ansi-bright-white-fg {
-    color: hsl(var(--heroui-foreground-100));
+    color: var(--foreground);
   }
 
   /* Text styles */
@@ -154,7 +134,7 @@ html.dark {
 
   /* Links */
   & a {
-    color: hsl(var(--heroui-primary));
+    color: var(--accent);
     text-decoration: underline;
   }
 }

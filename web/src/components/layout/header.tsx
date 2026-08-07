@@ -1,28 +1,25 @@
 import { listSubscriptions } from "@/api/subscriptions";
-import { AnimatedThemeToggler } from "@/components/magicui/animated-theme-toggler";
+import { ThemeToggler } from "@/components/layout/theme-toggler";
 import { CookieDropdown } from "@/features/cookies/cookie-dropdown";
 import { useCookies } from "@/features/cookies/use-cookies";
 import { useJobs } from "@/features/jobs/jobs-context";
 import { useVersionCheck } from "@/hooks/use-version-check";
 import {
   Button,
+  buttonVariants,
   Chip,
+  cn,
   Link as HeroUILink,
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  NavbarMenu,
-  NavbarMenuItem,
-  NavbarMenuToggle,
 } from "@heroui/react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Disc3Icon,
   DownloadIcon,
   ListMusicIcon,
+  MenuIcon,
   RocketIcon,
   StarIcon,
+  XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -52,171 +49,180 @@ export function Header() {
     listSubscriptions().then((subs) => setSubscriptionCount(subs.length));
   }, []);
 
+  // While the overlay menu is open, block page scroll and allow Escape to close
+  // it (v2's Navbar did both for us).
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
+
   return (
-    <Navbar
-      isMenuOpen={isMenuOpen}
-      onMenuOpenChange={setIsMenuOpen}
-      classNames={{
-        wrapper: "max-w-5xl",
-        brand: "grow-0",
-      }}
-    >
-      {/* Mobile menu toggle + Brand */}
-      <NavbarContent className="sm:hidden" justify="start">
-        <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-        />
-      </NavbarContent>
-
-      <NavbarBrand className="mr-4">
-        <Link to="/" className="flex items-center">
-          <Disc3Icon
-            className={`text-primary h-7 w-7 ${hasActiveJobs ? "animate-[spin_4s_linear_infinite] motion-reduce:animate-none" : ""}`}
-          />
-          <p className="text-foreground ml-2 text-xl font-bold">yubal</p>
-        </Link>
-      </NavbarBrand>
-
-      {/* Desktop navigation */}
-      <NavbarContent justify="start" className="hidden gap-2 sm:flex">
-        {navItems.map((item) => (
-          <NavbarItem
-            key={item.href}
-            className="group"
-            isActive={currentPath === item.href}
+    <>
+      <nav className="border-separator bg-background/70 sticky top-0 z-40 w-full border-b backdrop-blur-lg">
+        <header className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-4">
+          {/* Mobile menu toggle */}
+          <Button
+            isIconOnly
+            size="sm"
+            variant="ghost"
+            className="sm:hidden"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            onPress={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <Link
-              to={item.href}
-              className="text-foreground-400 text-small group-data-[active=true]:text-foreground tap-highlight-transparent active:opacity-disabled inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium hover:opacity-80"
-            >
-              <item.startIcon className="h-4 w-4" />
-              {item.label}
-              {item.href === "/playlists" && subscriptionCount > 0 && (
-                <Chip
-                  size="sm"
-                  variant="flat"
-                  radius="sm"
-                  className="font-mono"
-                  classNames={{
-                    content:
-                      "text-foreground-400 text-xs group-data-[active=true]:text-foreground",
-                  }}
-                >
-                  {subscriptionCount}
-                </Chip>
-              )}
-            </Link>
-          </NavbarItem>
-        ))}
-      </NavbarContent>
+            {isMenuOpen ? (
+              <XIcon className="h-5 w-5" />
+            ) : (
+              <MenuIcon className="h-5 w-5" />
+            )}
+          </Button>
 
-      {/* Actions */}
-      <NavbarContent className="items-center gap-2" justify="end">
-        {versionInfo?.updateAvailable && (
-          <NavbarItem className="hidden sm:flex">
-            <Button
-              as="a"
-              disableAnimation
-              size="sm"
-              href={versionInfo.releaseUrl}
+          {/* Brand */}
+          <Link to="/" className="mr-4 flex items-center">
+            <Disc3Icon
+              className={`text-accent h-7 w-7 ${hasActiveJobs ? "animate-[spin_4s_linear_infinite] motion-reduce:animate-none" : ""}`}
+            />
+            <p className="text-foreground ml-2 text-xl font-bold">yubal</p>
+          </Link>
+
+          {/* Desktop navigation */}
+          <ul className="hidden items-center gap-2 sm:flex">
+            {navItems.map((item) => {
+              const isActive = currentPath === item.href;
+              return (
+                <li key={item.href}>
+                  <Link
+                    to={item.href}
+                    data-active={isActive || undefined}
+                    className="text-muted data-[active]:text-foreground inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium hover:opacity-80"
+                  >
+                    <item.startIcon className="h-4 w-4" />
+                    {item.label}
+                    {item.href === "/playlists" && subscriptionCount > 0 && (
+                      <Chip size="sm" variant="soft" className="font-mono">
+                        {subscriptionCount}
+                      </Chip>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Actions */}
+          <div className="ml-auto flex items-center gap-2">
+            {versionInfo?.updateAvailable && (
+              <a
+                href={versionInfo.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  buttonVariants({ size: "sm", variant: "ghost" }),
+                  "hidden font-mono text-sm text-green-600 sm:inline-flex dark:text-green-400",
+                )}
+              >
+                <RocketIcon className="h-4 w-4" />
+                {versionInfo.latestVersion}
+              </a>
+            )}
+            <a
+              href="https://github.com/guillevc/yubal"
               target="_blank"
               rel="noopener noreferrer"
-              variant="flat"
-              color="success"
-              radius="lg"
-              startContent={<RocketIcon className="h-4 w-4" />}
-              className="text-small font-mono"
+              className={cn(
+                buttonVariants({ size: "sm", variant: "ghost" }),
+                "hidden text-sm sm:inline-flex",
+              )}
             >
-              {versionInfo.latestVersion}
-            </Button>
-          </NavbarItem>
-        )}
-        <NavbarItem className="hidden sm:flex">
-          <Button
-            as="a"
-            disableAnimation
-            size="sm"
-            href="https://github.com/guillevc/yubal"
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="light"
-            radius="lg"
-            startContent={
               <StarIcon
                 className="h-4 w-4 fill-amber-400 text-amber-400 dark:fill-amber-300 dark:text-amber-300"
                 strokeWidth={1}
               />
-            }
-            className="text-small"
-          >
-            Star on GitHub
-          </Button>
-        </NavbarItem>
-        <NavbarItem className="hidden sm:flex">
-          <CookieDropdown
-            variant="desktop"
-            cookiesConfigured={cookiesConfigured}
-            isUploading={isUploading}
-            isDeleting={isDeleting}
-            onDropdownAction={handleDropdownAction}
-            onUploadClick={triggerFileUpload}
-          />
-        </NavbarItem>
-        <NavbarItem>
-          <AnimatedThemeToggler />
-        </NavbarItem>
-      </NavbarContent>
+              Star on GitHub
+            </a>
+            <div className="hidden sm:block">
+              <CookieDropdown
+                variant="desktop"
+                cookiesConfigured={cookiesConfigured}
+                isUploading={isUploading}
+                isDeleting={isDeleting}
+                onDropdownAction={handleDropdownAction}
+                onUploadClick={triggerFileUpload}
+              />
+            </div>
+            <ThemeToggler />
+          </div>
+        </header>
 
-      {/* Mobile menu */}
-      <NavbarMenu>
-        {navItems.map((item) => (
-          <NavbarMenuItem key={item.href} isActive={currentPath === item.href}>
-            <Link
-              to={item.href}
-              onClick={() => setIsMenuOpen(false)}
-              className={`flex w-full items-center gap-2 text-lg ${currentPath === item.href ? "text-primary" : "text-foreground"}`}
-            >
-              {item.label}
-              {item.href === "/playlists" && subscriptionCount > 0 && (
-                <Chip size="sm" variant="flat" color="primary">
-                  {subscriptionCount}
-                </Chip>
-              )}
-            </Link>
-          </NavbarMenuItem>
-        ))}
-        <NavbarMenuItem>
-          <CookieDropdown
-            variant="mobile"
-            cookiesConfigured={cookiesConfigured}
-            isUploading={isUploading}
-            isDeleting={isDeleting}
-            onDropdownAction={handleDropdownAction}
-            onUploadClick={triggerFileUpload}
-          />
-        </NavbarMenuItem>
-        <NavbarMenuItem>
-          <HeroUILink
-            href="https://github.com/guillevc/yubal"
-            isExternal
-            showAnchorIcon
-            color="foreground"
-            className="w-full"
-            size="lg"
-          >
-            Star on GitHub
-          </HeroUILink>
-        </NavbarMenuItem>
-      </NavbarMenu>
+        {/* Hidden file input for cookie upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".txt"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </nav>
 
-      {/* Hidden file input for cookie upload */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".txt"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-    </Navbar>
+      {/* Mobile menu: overlays the page instead of pushing it down, so the
+          sticky bar keeps its height and content below never shifts. Must live
+          outside <nav>, whose backdrop-filter would otherwise make it the
+          containing block for this fixed element. */}
+      {isMenuOpen && (
+        <div className="border-separator bg-background/90 fixed inset-x-0 top-16 bottom-0 z-30 overflow-y-auto border-t backdrop-blur-lg sm:hidden">
+          <ul className="flex flex-col gap-4 p-6">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  to={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex w-full items-center gap-2 text-lg ${currentPath === item.href ? "text-accent" : "text-foreground"}`}
+                >
+                  {item.label}
+                  {item.href === "/playlists" && subscriptionCount > 0 && (
+                    <Chip size="sm" variant="soft" color="accent">
+                      {subscriptionCount}
+                    </Chip>
+                  )}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <CookieDropdown
+                variant="mobile"
+                cookiesConfigured={cookiesConfigured}
+                isUploading={isUploading}
+                isDeleting={isDeleting}
+                onDropdownAction={handleDropdownAction}
+                onUploadClick={triggerFileUpload}
+              />
+            </li>
+            <li>
+              <HeroUILink
+                href="https://github.com/guillevc/yubal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground w-full text-lg"
+              >
+                Star on GitHub
+                <HeroUILink.Icon />
+              </HeroUILink>
+            </li>
+          </ul>
+        </div>
+      )}
+    </>
   );
 }

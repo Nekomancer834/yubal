@@ -4,7 +4,14 @@ import { SubscriptionsTable } from "@/features/subscriptions/subscriptions-table
 import { useSubscriptions } from "@/features/subscriptions/use-subscriptions";
 import { useScheduleCountdown } from "@/hooks/use-schedule-countdown";
 import { isValidUrl } from "@/lib/url";
-import { Alert, Button, Card, CardBody, Input, Tooltip } from "@heroui/react";
+import {
+  Alert,
+  Button,
+  Card,
+  InputGroup,
+  NumberField,
+  Spinner,
+} from "@heroui/react";
 import {
   CircleQuestionMarkIcon,
   ClockIcon,
@@ -72,7 +79,7 @@ export function SubscriptionsPage() {
 
       {/* URL Input Section */}
       <section className="mb-8 flex gap-2">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <UrlInput
             value={url}
             onChange={setUrl}
@@ -80,36 +87,43 @@ export function SubscriptionsPage() {
             placeholder="Playlist URL to sync automatically"
           />
         </div>
-        <Tooltip content="Max tracks to sync per run" offset={14}>
-          <Input
-            type="number"
-            value={String(maxItems)}
-            onChange={(e) => {
-              const value = parseInt(e.target.value, 10);
-              if (!Number.isNaN(value) && value >= 1) setMaxItems(value);
-            }}
-            min={1}
-            max={10000}
-            radius="lg"
-            placeholder="Max"
-            startContent={<HashIcon className="text-foreground-400 h-4 w-4" />}
-            classNames={{
-              base: "w-24",
-              input: "font-mono",
-            }}
-          />
-        </Tooltip>
+        <NumberField
+          className="w-24"
+          aria-label="Max tracks to sync per run"
+          value={maxItems}
+          onChange={(value) => {
+            if (!Number.isNaN(value) && value >= 1) setMaxItems(value);
+          }}
+          minValue={1}
+          maxValue={10000}
+        >
+          <InputGroup>
+            <InputGroup.Prefix>
+              <HashIcon className="text-muted h-4 w-4" />
+            </InputGroup.Prefix>
+            <InputGroup.Input
+              placeholder="Max"
+              className="w-full min-w-0 font-mono"
+            />
+          </InputGroup>
+        </NumberField>
         <Button
-          color="primary"
-          radius="lg"
-          variant={canAdd ? "shadow" : "solid"}
-          className="shadow-primary-100/50"
+          variant="primary"
+          className="shrink-0"
           onPress={handleAdd}
           isDisabled={!canAdd}
-          isLoading={isAdding}
-          startContent={!isAdding && <ZapIcon className="h-4 w-4" />}
+          isPending={isAdding}
         >
-          Subscribe
+          {({ isPending }) => (
+            <>
+              {isPending ? (
+                <Spinner color="current" size="sm" />
+              ) : (
+                <ZapIcon className="h-4 w-4" />
+              )}
+              Subscribe
+            </>
+          )}
         </Button>
       </section>
 
@@ -138,45 +152,47 @@ export function SubscriptionsPage() {
           </SubscriptionCard.Icon>
         </SubscriptionCard>
         {/* Sync all button */}
-        <Card
-          isHoverable={canSyncAll}
-          isPressable={canSyncAll}
-          isDisabled={!canSyncAll}
-          onPress={handleSyncAll}
-          classNames={{
-            base: "group",
-            body: "flex flex-1 flex-col items-center justify-center gap-2",
-          }}
-        >
-          <CardBody>
+        {/* The card's padding lives on the button so the whole card is the
+            hit target and the hover highlight covers it edge to edge. */}
+        <Card className={`p-0 ${canSyncAll ? "" : "opacity-50"}`}>
+          <button
+            type="button"
+            disabled={!canSyncAll}
+            onClick={handleSyncAll}
+            className="group enabled:hover:bg-surface-hover flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-[inherit] p-4 transition-colors disabled:cursor-not-allowed"
+          >
             <RefreshCw
               size={24}
-              className={`mb-1 ${isSyncing ? "text-success-400 animate-spin" : "transition-transform duration-500 group-data-[hover=true]:rotate-180"}`}
+              className={`mb-1 ${isSyncing ? "text-success animate-spin" : "transition-transform duration-500 group-hover:rotate-180"}`}
             />
-            <span className="text-small font-medium">
+            <span className="text-sm font-medium">
               {isSyncing ? "Synchronizing..." : "Sync all now"}
             </span>
-          </CardBody>
+          </button>
         </Card>
       </div>
       {/* Scheduler disabled alert */}
       {schedulerStatus?.enabled === false && (
         <div className="mb-6 flex w-full items-center justify-center">
-          <Alert
-            icon={<ZapOffIcon size={18} />}
-            endContent={
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://github.com/guillevc/yubal?tab=readme-ov-file#%EF%B8%8F-configuration"
-              >
-                <CircleQuestionMarkIcon size={20} className="mr-2" />
-              </a>
-            }
-            color="warning"
-            title="Scheduler is disabled."
-            description="You can still add playlists and sync them manually."
-          />
+          <Alert status="warning">
+            <Alert.Indicator>
+              <ZapOffIcon size={18} />
+            </Alert.Indicator>
+            <Alert.Content>
+              <Alert.Title>Scheduler is disabled.</Alert.Title>
+              <Alert.Description>
+                You can still add playlists and sync them manually.
+              </Alert.Description>
+            </Alert.Content>
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Configuration docs"
+              href="https://github.com/guillevc/yubal?tab=readme-ov-file#%EF%B8%8F-configuration"
+            >
+              <CircleQuestionMarkIcon size={20} className="mr-2" />
+            </a>
+          </Alert>
         </div>
       )}
       {/* Subscriptions Table */}

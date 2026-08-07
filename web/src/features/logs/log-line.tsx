@@ -1,4 +1,5 @@
 import type { components } from "@/api/schema";
+import { cn } from "@heroui/react";
 import {
   AlertTriangleIcon,
   ArrowDownIcon,
@@ -31,7 +32,7 @@ const STATUS_CONFIG: Record<
 function HeaderLog({ header }: { header: string }) {
   return (
     <div className="mt-2 first:mt-0">
-      <span className="text-primary font-bold">
+      <span className="text-accent truncate font-bold">
         {"═".repeat(15)} {header} {"═".repeat(15)}
       </span>
     </div>
@@ -50,10 +51,10 @@ function PhaseLog({
 }) {
   return (
     <div className="flex flex-col">
-      <span className="text-secondary font-bold">
+      <span className="text-secondary truncate font-bold">
         ━━ Phase {phaseNum}: {phase} {"━".repeat(20)}
       </span>
-      <span>{message}</span>
+      <span className="break-words">{message}</span>
     </div>
   );
 }
@@ -105,11 +106,11 @@ function ExtractionStatsLog({
   if (unmatched > 0) details.push(`${unmatched} unmatched`);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       <CheckIcon className={`${ICON_CLASS} text-success`} />
       <span className="text-success">{success} extracted</span>
       {details.length > 0 && (
-        <span className="text-foreground-400">({details.join(", ")})</span>
+        <span className="text-muted">({details.join(", ")})</span>
       )}
       {totalSkipped > 0 && (
         <>
@@ -139,7 +140,7 @@ function DownloadStatsLog({
   const iconColor = hasIssues ? "text-warning" : "text-success";
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       <Icon className={`${ICON_CLASS} ${iconColor}`} />
       <span className="text-success">{success} success</span>
       <span>,</span>
@@ -165,12 +166,12 @@ function ProgressLog({
   isDownload: boolean;
 }) {
   return (
-    <div className="flex items-center gap-1">
-      {isDownload && <ArrowDownIcon className={`${ICON_CLASS} text-primary`} />}
-      <span className="text-foreground-400">
+    <div className="flex items-start gap-1">
+      {isDownload && <ArrowDownIcon className={`${ICON_CLASS} text-accent`} />}
+      <span className="text-muted">
         [{current}/{total}]
       </span>
-      <span>{message}</span>
+      <span className="min-w-0 break-words">{message}</span>
     </div>
   );
 }
@@ -189,7 +190,7 @@ function StatusLog({
   return (
     <div className="flex gap-1 align-text-top">
       <Icon className={`${ICON_CLASS} ${config.color}`} />
-      <span>{message}</span>
+      <span className="min-w-0 break-words">{message}</span>
     </div>
   );
 }
@@ -197,9 +198,9 @@ function StatusLog({
 /** File operation display */
 function FileLog({ message }: { message: string }) {
   return (
-    <div className="flex items-center gap-1">
-      <PaperclipIcon className={`${ICON_CLASS} text-foreground-400`} />
-      <span>{message}</span>
+    <div className="flex items-start gap-1">
+      <PaperclipIcon className={`${ICON_CLASS} text-muted`} />
+      <span className="min-w-0 break-words">{message}</span>
     </div>
   );
 }
@@ -214,7 +215,7 @@ const LEVEL_COLORS: Record<string, string> = {
 /** Default/plain text display with level-based coloring */
 function DefaultLog({ message, level }: { message: string; level?: string }) {
   const colorClass = level ? LEVEL_COLORS[level] : undefined;
-  return <div className={colorClass}>{message}</div>;
+  return <div className={cn("break-words", colorClass)}>{message}</div>;
 }
 
 /**

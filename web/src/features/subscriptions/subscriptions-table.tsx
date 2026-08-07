@@ -1,17 +1,6 @@
 import type { Subscription } from "@/api/subscriptions";
-import { EmptyState } from "@/components/common/empty-state";
 import { useTimeAgo } from "@/hooks/use-time-ago";
-import {
-  Button,
-  Image,
-  Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@heroui/react";
+import { Button, EmptyState, Spinner, Switch, Table } from "@heroui/react";
 import {
   InboxIcon,
   ListMusicIcon,
@@ -23,18 +12,15 @@ import { useCallback } from "react";
 type ColumnKey = "name" | "lastSynced" | "limit" | "enabled" | "actions";
 
 function TimeAgo({ dateString }: { dateString: string | null | undefined }) {
-  const timeAgo = useTimeAgo(dateString);
-  return (
-    <span className="text-foreground-500 font-mono text-sm">{timeAgo}</span>
-  );
+  return useTimeAgo(dateString);
 }
 
-const columns: { name: string; key: ColumnKey }[] = [
-  { name: "PLAYLIST", key: "name" },
-  { name: "LAST SYNCED", key: "lastSynced" },
-  { name: "LIMIT", key: "limit" },
-  { name: "ENABLED", key: "enabled" },
-  { name: "ACTIONS", key: "actions" },
+const columns: { name: string; id: ColumnKey }[] = [
+  { name: "Playlist", id: "name" },
+  { name: "Last synced", id: "lastSynced" },
+  { name: "Limit", id: "limit" },
+  { name: "Enabled", id: "enabled" },
+  { name: "Actions", id: "actions" },
 ];
 
 type SubscriptionsTableProps = {
@@ -61,73 +47,65 @@ export function SubscriptionsTable({
       columnKey: ColumnKey,
     ) => {
       switch (columnKey) {
-        case "name": {
-          const size = 40;
+        case "name":
           return (
-            <div className="flex items-center gap-4 max-md:gap-0">
+            <div className="flex items-center gap-3">
               {subscription.thumbnail_url ? (
-                <Image
-                  alt="Playlist thumbnail"
+                <img
+                  alt=""
                   src={subscription.thumbnail_url}
-                  width={size}
-                  height={size}
-                  radius="md"
-                  fallbackSrc=""
-                  className="max-md:hidden"
+                  className="size-10 shrink-0 rounded-md object-cover max-md:hidden"
                 />
               ) : (
-                <div className="bg-content3 flex h-8 w-8 shrink-0 items-center justify-center rounded">
-                  <ListMusicIcon
-                    width={size}
-                    height={size}
-                    className="text-foreground-400 max-md:hidden"
-                  />
+                <div className="bg-surface-tertiary flex size-10 shrink-0 items-center justify-center rounded-md max-md:hidden">
+                  <ListMusicIcon className="text-muted size-5" />
                 </div>
               )}
-              <span className="font-mono text-sm">{subscription.name}</span>
+              {subscription.name}
             </div>
           );
-        }
         case "lastSynced":
           return <TimeAgo dateString={subscription.last_synced_at} />;
         case "limit":
-          return (
-            <span className="text-foreground-500 font-mono text-sm">
-              {subscription.max_items ?? "∞"}
-            </span>
-          );
+          return subscription.max_items ?? "∞";
         case "enabled":
           return (
             <Switch
               size="sm"
               isDisabled={!isSchedulerEnabled}
               isSelected={subscription.enabled}
-              onValueChange={(enabled) =>
-                onToggleEnabled(subscription.id, enabled)
-              }
+              onChange={(enabled) => onToggleEnabled(subscription.id, enabled)}
               aria-label="Toggle auto-sync"
-            />
+            >
+              <Switch.Content>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch.Content>
+            </Switch>
           );
         case "actions":
           return (
-            <div className="flex items-center justify-center gap-1">
+            <div className="flex items-center gap-1">
               <Button
-                variant="light"
+                variant="ghost"
                 size="sm"
                 isIconOnly
-                className="text-foreground-500 hover:text-primary"
+                aria-label="Sync now"
+                className="icon-action"
                 onPress={() => onSync(subscription.id)}
               >
-                <RefreshCwIcon className="h-4 w-4" />
+                <RefreshCwIcon className="size-4" />
               </Button>
               <Button
-                variant="light"
+                variant="ghost"
                 size="sm"
                 isIconOnly
-                className="text-foreground-500 hover:text-danger"
+                aria-label="Delete playlist"
+                className="icon-action hover:text-danger"
                 onPress={() => onDelete(subscription.id)}
               >
-                <Trash2Icon className="h-4 w-4" />
+                <Trash2Icon className="size-4" />
               </Button>
             </div>
           );
@@ -138,44 +116,45 @@ export function SubscriptionsTable({
 
   return (
     <Table>
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn
-            key={column.key}
-            align={
-              column.key === "actions" || column.key == "enabled"
-                ? "center"
-                : "start"
+      <Table.ScrollContainer>
+        <Table.Content aria-label="Subscribed playlists">
+          <Table.Header columns={columns}>
+            {(column) => (
+              <Table.Column id={column.id} isRowHeader={column.id === "name"}>
+                {column.name}
+              </Table.Column>
+            )}
+          </Table.Header>
+          <Table.Body
+            items={isLoading ? [] : subscriptions}
+            renderEmptyState={() =>
+              isLoading ? (
+                <EmptyState className="flex min-h-[160px] w-full flex-col items-center justify-center gap-4 text-center">
+                  <Spinner size="sm" />
+                  <span className="text-muted text-sm">Loading...</span>
+                </EmptyState>
+              ) : (
+                <EmptyState className="flex min-h-[160px] w-full flex-col items-center justify-center gap-4 text-center">
+                  <InboxIcon className="text-muted size-6" />
+                  <span className="text-muted text-sm">
+                    No playlists registered
+                  </span>
+                </EmptyState>
+              )
             }
           >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        items={subscriptions}
-        loadingState={isLoading ? "loading" : "idle"}
-        loadingContent=<span className="text-foreground-400 text-small font-mono">
-          Loading...
-        </span>
-        emptyContent={
-          <EmptyState icon={InboxIcon} title="No playlists registered" />
-        }
-      >
-        {(subscription) => (
-          <TableRow key={subscription.id}>
-            {(columnKey) => (
-              <TableCell>
-                {renderCell(
-                  subscription,
-                  !!isSchedulerEnabled,
-                  columnKey as ColumnKey,
-                )}
-              </TableCell>
+            {(subscription) => (
+              <Table.Row id={subscription.id}>
+                {columns.map((column) => (
+                  <Table.Cell key={column.id}>
+                    {renderCell(subscription, !!isSchedulerEnabled, column.id)}
+                  </Table.Cell>
+                ))}
+              </Table.Row>
             )}
-          </TableRow>
-        )}
-      </TableBody>
+          </Table.Body>
+        </Table.Content>
+      </Table.ScrollContainer>
     </Table>
   );
 }

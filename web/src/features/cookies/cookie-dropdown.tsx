@@ -1,12 +1,4 @@
-import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Link,
-  Tooltip,
-} from "@heroui/react";
+import { Button, Dropdown, Label, Spinner, Tooltip } from "@heroui/react";
 import { CookieIcon, Trash2Icon, UploadIcon } from "lucide-react";
 
 interface CookieDropdownProps {
@@ -29,34 +21,48 @@ export function CookieDropdown({
   if (variant === "desktop") {
     return cookiesConfigured ? (
       <Dropdown>
-        <DropdownTrigger>
+        <Dropdown.Trigger>
           <Button
             isIconOnly
             size="sm"
-            variant="light"
+            variant="ghost"
             aria-label="Cookie options"
-            isLoading={isDeleting}
+            isPending={isDeleting}
           >
-            <CookieIcon className="h-5 w-5 text-amber-500 dark:text-orange-300" />
+            {({ isPending }) =>
+              isPending ? (
+                <Spinner color="current" size="sm" />
+              ) : (
+                <CookieIcon className="h-5 w-5 text-amber-500 dark:text-orange-300" />
+              )
+            }
           </Button>
-        </DropdownTrigger>
+        </Dropdown.Trigger>
         <CookieDropdownMenu onAction={onDropdownAction} />
       </Dropdown>
     ) : (
-      <Tooltip
-        content="Upload cookies.txt for age-restricted or Premium content"
-        closeDelay={0}
-      >
-        <Button
-          isIconOnly
-          size="sm"
-          variant="light"
-          aria-label="Upload cookies"
-          isLoading={isUploading}
-          onPress={onUploadClick}
-        >
-          <CookieIcon className="h-5 w-5" />
-        </Button>
+      <Tooltip delay={0} closeDelay={0}>
+        <Tooltip.Trigger>
+          <Button
+            isIconOnly
+            size="sm"
+            variant="ghost"
+            aria-label="Upload cookies"
+            isPending={isUploading}
+            onPress={onUploadClick}
+          >
+            {({ isPending }) =>
+              isPending ? (
+                <Spinner color="current" size="sm" />
+              ) : (
+                <CookieIcon className="h-5 w-5" />
+              )
+            }
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          Upload cookies.txt for age-restricted or Premium content
+        </Tooltip.Content>
       </Tooltip>
     );
   }
@@ -64,23 +70,24 @@ export function CookieDropdown({
   // Mobile variant
   return cookiesConfigured ? (
     <Dropdown>
-      <DropdownTrigger>
-        <Link as="button" color="foreground" className="w-full gap-2" size="lg">
+      <Dropdown.Trigger>
+        <button
+          type="button"
+          className="text-foreground w-full text-left text-lg"
+        >
           Cookies configured
-        </Link>
-      </DropdownTrigger>
+        </button>
+      </Dropdown.Trigger>
       <CookieDropdownMenu onAction={onDropdownAction} />
     </Dropdown>
   ) : (
-    <Link
-      as="button"
-      color="foreground"
-      className="w-full cursor-pointer gap-2"
-      size="lg"
-      onPress={onUploadClick}
+    <button
+      type="button"
+      className="text-foreground w-full cursor-pointer text-left text-lg"
+      onClick={onUploadClick}
     >
       Upload cookies
-    </Link>
+    </button>
   );
 }
 
@@ -90,21 +97,17 @@ interface CookieDropdownMenuProps {
 
 function CookieDropdownMenu({ onAction }: CookieDropdownMenuProps) {
   return (
-    <DropdownMenu aria-label="Cookie actions" onAction={onAction}>
-      <DropdownItem
-        key="upload"
-        startContent={<UploadIcon className="h-4 w-4" />}
-      >
-        Upload new cookies
-      </DropdownItem>
-      <DropdownItem
-        key="delete"
-        color="danger"
-        className="text-danger"
-        startContent={<Trash2Icon className="h-4 w-4" />}
-      >
-        Delete cookies
-      </DropdownItem>
-    </DropdownMenu>
+    <Dropdown.Popover>
+      <Dropdown.Menu aria-label="Cookie actions" onAction={onAction}>
+        <Dropdown.Item id="upload" textValue="Upload new cookies">
+          <UploadIcon className="h-4 w-4" />
+          <Label>Upload new cookies</Label>
+        </Dropdown.Item>
+        <Dropdown.Item id="delete" textValue="Delete cookies" variant="danger">
+          <Trash2Icon className="h-4 w-4" />
+          <Label>Delete cookies</Label>
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown.Popover>
   );
 }

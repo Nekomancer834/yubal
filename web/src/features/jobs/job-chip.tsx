@@ -1,13 +1,14 @@
-import { Chip } from "@heroui/react";
+import { Chip, tv, type VariantProps } from "@heroui/react";
 import { ReactNode } from "react";
-import { tv, type VariantProps } from "tailwind-variants";
 
 const jobChip = tv({
   base: "font-mono",
   variants: {
     variant: {
-      flat: "text-foreground-500",
-      album: "bg-primary/15 text-primary",
+      // `--default-soft` sits within ~1% lightness of the row's surface, so the
+      // neutral chips need their own contrast against the card background.
+      flat: "bg-foreground/10 text-muted",
+      album: "bg-accent/15 text-accent",
       playlist: "bg-secondary/15 text-secondary",
       track:
         "bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300",
@@ -25,13 +26,8 @@ type Props = {
 
 export function JobChip({ children, variant, className }: Props) {
   return (
-    <Chip
-      size="sm"
-      variant="flat"
-      classNames={{
-        base: jobChip({ variant, className }),
-      }}
-    >
+    // `md` keeps the base chip padding (px-2 py-0.5); `sm` squashes it to px-1 py-0.
+    <Chip size="md" variant="soft" className={jobChip({ variant, className })}>
       {children}
     </Chip>
   );

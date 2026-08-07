@@ -4,13 +4,13 @@ export function Footer() {
   return (
     <footer className="mx-auto max-w-5xl px-4 py-6">
       <div className="flex flex-col items-center gap-2 text-center">
-        <p className="text-foreground-500 font-mono text-xs">
+        <p className="text-muted font-mono text-xs">
           Made by{" "}
           <a
             href="https://github.com/guillevc"
             target="_blank"
             rel="noopener noreferrer"
-            className="group text-primary hover:text-foreground"
+            className="group text-accent hover:text-foreground"
           >
             <GithubIcon className="-mt-px inline h-4 w-4" />{" "}
             <span className="group-hover:underline">guillevc</span>
@@ -20,13 +20,13 @@ export function Footer() {
             href="https://ko-fi.com/guillevc"
             target="_blank"
             rel="noopener noreferrer"
-            className="group text-primary hover:text-[#FF5E5B]"
+            className="group text-accent hover:text-[#FF5E5B]"
           >
             <KofiIcon className="-mt-px inline h-4 w-4" />{" "}
             <span className="group-hover:underline">Ko-fi</span>
           </a>
         </p>
-        <p className="text-foreground-400 font-mono text-xs">
+        <p className="text-muted/70 font-mono text-xs">
           Powered by{" "}
           <a
             href="https://github.com/yt-dlp/yt-dlp"

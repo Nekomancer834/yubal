@@ -35,11 +35,11 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="bg-background text-foreground dark flex min-h-screen flex-col items-center justify-center gap-1">
           <AlertTriangleIcon className="text-danger h-12 w-12" />
           <h1 className="text-lg font-semibold">Something went wrong</h1>
-          <p className="text-foreground-500 max-w-md text-center text-sm">
+          <p className="text-muted max-w-md text-center text-sm">
             An unexpected error occurred. Please refresh the page.
           </p>
           {this.state.error && (
-            <pre className="bg-content1 text-content1-foreground mt-4 max-w-lg overflow-auto rounded-lg p-4 font-mono text-xs">
+            <pre className="bg-surface text-surface-foreground mt-4 max-w-lg overflow-auto rounded-lg p-4 font-mono text-xs">
               {this.state.error.message}
             </pre>
           )}

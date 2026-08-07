@@ -24,3 +24,5 @@ __pycache__/
 /.agents/
 /.claude/
 /.codegraph/
+# heroui-agents-md
+.heroui-docs/

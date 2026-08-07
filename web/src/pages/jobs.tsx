@@ -3,7 +3,7 @@ import { LogsPanel } from "@/features/logs/logs-panel";
 import { JobsPanel } from "@/features/jobs/jobs-panel";
 import { useJobs } from "@/features/jobs/jobs-context";
 import { isValidUrl } from "@/lib/url";
-import { Button, Input, Tooltip } from "@heroui/react";
+import { Button, InputGroup, NumberField } from "@heroui/react";
 import { DownloadIcon, HashIcon } from "lucide-react";
 import { memo, useState } from "react";
 
@@ -30,37 +30,36 @@ const DownloadForm = memo(function DownloadForm({
 
   return (
     <section className="mb-8 flex gap-2">
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <UrlInput value={url} onChange={setUrl} />
       </div>
-      <Tooltip content="Max number of tracks to download" offset={14}>
-        <Input
-          type="number"
-          value={String(maxItems)}
-          onChange={(e) => {
-            const value = parseInt(e.target.value, 10);
-            if (!Number.isNaN(value) && value >= 1) setMaxItems(value);
-          }}
-          min={1}
-          max={10000}
-          radius="lg"
-          placeholder="Max"
-          startContent={<HashIcon className="text-foreground-400 h-4 w-4" />}
-          classNames={{
-            base: "w-24",
-            input: "font-mono",
-          }}
-        />
-      </Tooltip>
+      <NumberField
+        className="w-24"
+        aria-label="Max number of tracks to download"
+        value={maxItems}
+        onChange={(value) => {
+          if (!Number.isNaN(value) && value >= 1) setMaxItems(value);
+        }}
+        minValue={1}
+        maxValue={10000}
+      >
+        <InputGroup>
+          <InputGroup.Prefix>
+            <HashIcon className="text-muted h-4 w-4" />
+          </InputGroup.Prefix>
+          <InputGroup.Input
+            placeholder="Max"
+            className="w-full min-w-0 font-mono"
+          />
+        </InputGroup>
+      </NumberField>
       <Button
-        color="primary"
-        radius="lg"
-        variant={canDownload ? "shadow" : "solid"}
-        className="shadow-primary-100/50"
+        variant="primary"
+        className="shrink-0"
         onPress={handleDownload}
         isDisabled={!canDownload}
-        startContent={<DownloadIcon className="h-4 w-4" />}
       >
+        <DownloadIcon className="h-4 w-4" />
         Download
       </Button>
     </section>

@@ -1,57 +1,35 @@
-import { Card, CardBody, CardHeader, ScrollShadow } from "@heroui/react";
+import { Card, cn, ScrollShadow } from "@heroui/react";
 import type { HTMLAttributes, ReactNode, Ref } from "react";
 
 type Props = HTMLAttributes<HTMLElement> & {
   children: ReactNode;
 };
 
-export function Panel({ children, className = "" }: Props) {
-  return (
-    <Card
-      className={className}
-      classNames={{
-        body: "px-0",
-      }}
-    >
-      {children}
-    </Card>
-  );
+export function Panel({ children, className }: Props) {
+  return <Card className={className}>{children}</Card>;
 }
 
 type HeaderProps = {
   leadingIcon?: ReactNode;
   badge?: ReactNode;
-  trailingIcon?: ReactNode;
   children: ReactNode;
   className?: string;
-  onClick?: () => void;
 };
 
 export function PanelHeader({
   leadingIcon,
   badge,
-  trailingIcon,
   children,
-  className = "",
-  onClick,
-  ...props
+  className,
 }: HeaderProps) {
   return (
-    <CardHeader
-      className={`shrink-0 px-4 py-3 ${className}`}
-      {...props}
-      onClick={onClick}
-    >
-      <div
-        className={`text-foreground-500 flex w-full items-center gap-2 ${className}`}
-        {...props}
-      >
+    <Card.Header className={className}>
+      <div className="text-muted flex w-full items-center gap-2">
         {leadingIcon && <span>{leadingIcon}</span>}
         <span className="text-xs tracking-wider uppercase">{children}</span>
         {badge}
-        {trailingIcon && <span className="ml-auto">{trailingIcon}</span>}
       </div>
-    </CardHeader>
+    </Card.Header>
   );
 }
 
@@ -63,21 +41,24 @@ type ContentProps = HTMLAttributes<HTMLDivElement> & {
 
 export function PanelContent({
   children,
-  className = "",
+  className,
   height = "h-72",
   ref,
   ...props
 }: ContentProps) {
   return (
-    <CardBody className="pt-0">
+    // Negative margin cancels the card's padding so the scroll area spans the
+    // full card width: the scrollbar sits on the card border and the scroll
+    // shadows fade across the whole card. Padding moves onto the scroller.
+    <Card.Content className="-mx-4">
       <ScrollShadow
         ref={ref}
-        className={`${height} px-4 py-4 ${className}`}
+        className={cn(height, "px-4", className)}
         offset={2}
         {...props}
       >
         {children}
       </ScrollShadow>
-    </CardBody>
+    </Card.Content>
   );
 }

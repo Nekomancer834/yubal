@@ -1,5 +1,5 @@
 import { YOUTUBE_URL_PATTERN } from "@/lib/url";
-import { Input } from "@heroui/react";
+import { CloseButton, FieldError, InputGroup, TextField } from "@heroui/react";
 import { LinkIcon } from "lucide-react";
 
 type Props = {
@@ -18,17 +18,32 @@ export function UrlInput({
   const isValid = value === "" || YOUTUBE_URL_PATTERN.test(value);
 
   return (
-    <Input
-      isClearable
+    <TextField
       type="url"
-      placeholder={placeholder}
       value={value}
-      onValueChange={(v) => onChange(v.trim())}
+      onChange={(v) => onChange(v.trim())}
       isDisabled={disabled}
       isInvalid={!isValid}
-      radius="lg"
-      errorMessage={!isValid ? "Enter a valid YouTube URL" : undefined}
-      startContent={<LinkIcon className="text-foreground-400 h-4 w-4" />}
-    />
+      fullWidth
+      aria-label={placeholder}
+    >
+      <InputGroup className="min-w-0">
+        <InputGroup.Prefix>
+          <LinkIcon className="text-muted h-4 w-4" />
+        </InputGroup.Prefix>
+        {/* The bare input keeps its intrinsic ~20ch width and would push the
+            row past the viewport on narrow screens without min-w-0. */}
+        <InputGroup.Input
+          className="w-full min-w-0"
+          placeholder={placeholder}
+        />
+        {value !== "" && (
+          <InputGroup.Suffix>
+            <CloseButton aria-label="Clear" onPress={() => onChange("")} />
+          </InputGroup.Suffix>
+        )}
+      </InputGroup>
+      {!isValid && <FieldError>Enter a valid YouTube URL</FieldError>}
+    </TextField>
   );
 }

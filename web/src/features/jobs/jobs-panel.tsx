@@ -19,7 +19,7 @@ export function JobsPanel({ jobs, isLoading, onCancel, onDelete }: Props) {
         leadingIcon={<DownloadIcon size={18} />}
         badge={
           jobs.length > 0 && (
-            <span className="text-foreground-400 font-mono text-xs">
+            <span className="text-muted font-mono text-xs">
               ({jobs.length})
             </span>
           )
@@ -30,9 +30,7 @@ export function JobsPanel({ jobs, isLoading, onCancel, onDelete }: Props) {
       <PanelContent height="h-124" className="space-y-2">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <span className="text-foreground-400 text-small font-mono">
-              Loading...
-            </span>
+            <span className="text-muted font-mono text-sm">Loading...</span>
           </div>
         ) : jobs.length === 0 ? (
           <EmptyState icon={InboxIcon} title="No downloads yet" />
